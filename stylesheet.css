@@ -70,21 +70,20 @@ body {
 
 }
 
-.display-song .song-title {
+.display-song #song-title {
     font-size: 5em;
     font-weight: bolder;
 }
 
-.display-song .song-artist {
+.display-song #song-artist {
     font-size:2.5em;
 }
 
-.display-song .song-album {
+.display-song #song-album {
     font-size:2.5em;
 }
 
-.display-song .song-lyrics {
-    margin-left: 20%;
+.display-song #song-lyrics {
 
     display: flex;
     flex-direction: column;
