@@ -13,29 +13,28 @@
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container-fluid">
-              <a class="navbar-brand" href="#">Song Translator</a>
+              <a class="navbar-brand" href="index.html">Song Translator</a>
               <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
               </button>
-              <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                
-                <form class="d-flex" role="search">
-                  <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-            <button class="btn btn-primary btn-lg" type="submit">Search</button>
-                </form>
-              </div>
             </div>
           </nav>
     </header>
 
     <div class="display-song">
-            <h1 id="song-title">Ultralight Beam</h1>
-            <h2 id="song-artist">Artist: Kanye West</h2>
+            <h1 id="song-title">Song Title</h1>
+            <h2 id="song-artist">Artist: John Doe</h2>
 
-            <select class="language-picker">
+            <select id="language-options" class="language-picker">
                 <option>English</option>
-                <option>Español</option>
+                <option>Spanish</option>
+                <option>Italian</option>
+                <option>Arabic</option>
+                <option>Chinese</option>
+                <option>Hawaiian</option>
             </select>
+            <br>
+            <a id="language-button" onClick="translatePage()" class="btn btn-primary">Translate</a>
             <hr style="width:75%">
 
             <h3 id="song-lyrics">

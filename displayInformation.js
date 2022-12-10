@@ -1,24 +1,84 @@
+    languageCodes = {};
+    languageCodes["English"] = "en";
+    languageCodes["Spanish"] = "es";
+    languageCodes["Italian"] = "it";
+    languageCodes["Arabic"] = "ar";
+    languageCodes["Chinese"] = "zh-TW";
+    languageCodes["Hawaiian"] = "haw";
 
-    let searchButtonIndex = document.getElementById("search-button-index")
-    
-    if (searchButtonIndex) {
-        console.log("Store called!");
-        let searchBarIndex = document.getElementById("search-bar-index")
-        searchButtonIndex.addEventListener("click", function(e) {
-            e.preventDefault();
-            
-            if (searchBarIndex.value) {
-                let currSearchText = searchBarIndex.value;
-            
-                localStorage.setItem('searchText', currSearchText);
-                window.location.href = "search.html"
-                console.log("Button pressed! search was: " + searchBarIndex.value);
-            }
-            
-        })
-    } else {
-        console.log("Search button not found!");
+    CodetoLanguage = {};
+    CodetoLanguage["en"] = "English";
+    CodetoLanguage["es"] = "Spanish";
+    CodetoLanguage["it"] = "Italian";
+    CodetoLanguage["ar"] = "Arabic";
+    CodetoLanguage["zh-TW"] = "Chinese";
+    CodetoLanguage["haw"] = "Hawaiian";
+let searchButtonIndex = document.getElementById("search-button-index")
+
+if (searchButtonIndex) {
+    console.log("Store called!");
+    let searchBarIndex = document.getElementById("search-bar-index")
+    searchButtonIndex.addEventListener("click", function(e) {
+        e.preventDefault();
+        
+        if (searchBarIndex.value) {
+            let currSearchText = searchBarIndex.value;
+        
+            localStorage.setItem('searchText', currSearchText);
+            window.location.href = "search.html"
+            console.log("Button pressed! search was: " + searchBarIndex.value);
+        }
+        
+    })
+} else {
+    console.log("Search button not found!");
+}
+
+
+async function translatePage() {
+    const langOptions = document.querySelector('#language-options');
+    const currLang = langOptions.value;
+    console.log("translating to " + currLang);
+    console.log("The code is  " + languageCodes[currLang]);
+
+    const lyricWindow = document.getElementById("song-lyrics");
+    let input = '';
+
+    for (let i = 0; i < 1500; i++) 
+    {
+        input += lyricWindow.innerHTML[i];
     }
+
+
+    console.log("the length of this song is " , input.length);
+    const encodedParams = new URLSearchParams();
+    encodedParams.append("source_language", localStorage.getItem('currLang'));
+    encodedParams.append("target_language", languageCodes[currLang]);
+    encodedParams.append("text", input);
+    localStorage.setItem('currLang', languageCodes[currLang]);
+
+    const options = {
+        method: 'POST',
+        headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+            'X-RapidAPI-Key': '7c058e2848msh211adb167583bcdp18be5bjsn3804aca137ee',
+            'X-RapidAPI-Host': 'text-translator2.p.rapidapi.com'
+        },
+        body: encodedParams
+    };
+
+    const loading = `<h3 id="song-lyrics">
+                    <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                    </div>
+                    </h3>`
+    lyricWindow.innerHTML = loading;
+    const data = await fetch('https://text-translator2.p.rapidapi.com/translate', options)
+    const obj = await data.json();
+    console.log(obj);
+    lyricWindow.innerHTML = obj.data.translatedText;
+
+}
 
 let songInfo = {}
 async function displaySearchResults(searchText) {
@@ -28,23 +88,30 @@ async function displaySearchResults(searchText) {
     const options = {
         method: 'GET',
         headers: {
-            'X-RapidAPI-Key': '5a9b32ac03msh2ec6a2fc5bd76c1p1b9f9fjsn9780802960eb',
+            'X-RapidAPI-Key': '7c058e2848msh211adb167583bcdp18be5bjsn3804aca137ee',
             'X-RapidAPI-Host': 'genius-song-lyrics1.p.rapidapi.com'
         }
     };
 
-    const data = await fetch('https://genius-song-lyrics1.p.rapidapi.com/search?q='+urlComponent+'&per_page=20&page=1', options)
+    const data = await fetch('https://genius-song-lyrics1.p.rapidapi.com/search?q='+urlComponent+'&per_page=3&page=1', options)
     const obj = await data.json();
     //console.log(obj.response.hits);
     const keyCount = Object.keys(obj.response.hits).length; 
-    container.innerHTML =  ``;
-    let rowCount = 2;
+    const MAX_CARDS = 4;
+    let currCards = 0;
+    let cardHolder = ``;
+
     for (let i = 0; i < keyCount; i++) {
+        if (currCards == MAX_CARDS) {
+            break;
+        }
+
         let element = obj.response.hits[i];
         let id = "" + element.result.id + "";
         let songName = "" + element.result.title + "";
         let artistName = "" + element.result.primary_artist.name + "";
-        songInfo[id] = {songName, artistName};
+        let languageCode = "" + element.result.language + "";
+        let isExplicit = "" + element.result.language + "";
         const displayCard = `<div class="col-bg-5" style="min-width: 100px; max-width: 500px;">
                             <div class="card">
                                 <div class="card-body">
@@ -54,9 +121,40 @@ async function displaySearchResults(searchText) {
                                 </div>
                             </div>
                         </div>`
-        container.innerHTML += displayCard;
+        
+        // Now check if the lyrics exist, and if they do, display the card
+
+        const options2 = {
+            method: 'GET',
+            headers: {
+                'X-RapidAPI-Key': '7c058e2848msh211adb167583bcdp18be5bjsn3804aca137ee',
+                'X-RapidAPI-Host': 'genius-song-lyrics1.p.rapidapi.com'
+            }
+        };
+        
+        console.log("Fetching lyrics for song id="+id+"...");
+        
+        const data2= await fetch('https://genius-song-lyrics1.p.rapidapi.com/songs/'+id+'/lyrics', options2)
+        const obj2 = await data2.json();
+        if (!obj2.response) {
+            console.log("This song's lyrics cannot be found");
+        } else {
+            let lyrics = obj2.response.lyrics.lyrics.body.html
+            songInfo[id] = {songName, artistName, languageCode, lyrics};
+            //lyrics.replace(/<a href="\/9234498\/Alan-walker-faded\/You-were-the-shadow-to-my-light-did-you-feel-us"/g, '').replace(/<\/a>/g, '')
+            //console.log(obj.response.hits);
+            console.log("Lyrics found!:\n", lyrics);
+            cardHolder += displayCard;
+            console.log("Song displayed!")
+            currCards++;
+        }
     }
-    
+    if (currCards == 0)
+    {
+        container.innerHTML = `<h1 class="error-message">Sorry, but it looks like this artist's lyrics arent available on this API :(</h1>`;
+    } else {
+        container.innerHTML = cardHolder;
+    }
 }
 
 function loadSearch() {
@@ -70,6 +168,7 @@ function loadSearch() {
 }
 
 async function loadLyricsPage() {
+    
 
     const id = localStorage.getItem('id');
     console.log("id key found: " + id);
@@ -77,6 +176,11 @@ async function loadLyricsPage() {
     console.log("songName key found: " + songName);
     const artistName = localStorage.getItem('artistName');
     console.log("artistName key found: " + artistName);
+    const language = localStorage.getItem('languageCode');
+    console.log("language key found: " + language);
+    const lyrics = localStorage.getItem('lyrics');
+    console.log("lyrics found: ");
+
 
     const artistTitleDisplay = document.getElementById("song-artist");
     const songTitleDisplay = document.getElementById("song-title");
@@ -93,29 +197,16 @@ async function loadLyricsPage() {
         artistTitleDisplay.innerHTML = `<p>Artist: ${artistName}</p>`;
     }
 
-    const options = {
-        method: 'GET',
-        headers: {
-            'X-RapidAPI-Key': '5a9b32ac03msh2ec6a2fc5bd76c1p1b9f9fjsn9780802960eb',
-            'X-RapidAPI-Host': 'genius-song-lyrics1.p.rapidapi.com'
+    var optionsList = document.getElementById("language-options").options;
+    for (var i = 0; i < optionsList.length; i++) {
+        if (optionsList[i].text == CodetoLanguage[language]) {
+            optionsList[i].selected = true;
+        localStorage.setItem('currLang', language);
+        break;
         }
-    };
-    
-    console.log("Fetching lyrics for song id="+id+"...");
-    
-    const data = await fetch('https://genius-song-lyrics1.p.rapidapi.com/songs/'+id+'/lyrics', options)
-    const obj = await data.json();
-    if (!obj.response) {
-        console.log("This song's lyrics cannot be found");
-        lyricsDisplay.innerHTML = `<p>Sorry, but the lyrics to this song could not be found :'(</p>`;
-    } else {
-        let lyrics = obj.response.lyrics.lyrics.body.html
-        console.log("Lyrics found!");
-        lyrics.replace(/<a href="\/9234498\/Alan-walker-faded\/You-were-the-shadow-to-my-light-did-you-feel-us"/g, '').replace(/<\/a>/g, '')
-        //console.log(obj.response.hits);
-    console.log("Lyrics found!:\n", lyrics);
-    lyricsDisplay.innerHTML = lyrics;
     }
+    
+    lyricsDisplay.innerHTML = lyrics;
     
 }
 
@@ -124,8 +215,10 @@ function clickLyricButton(id) {
     //console.log(id);
     //console.log("song info: ", songInfo);
     const obj = songInfo[id]
-    const artistName = obj.artistName;
-    const songName = obj.songName;
+    const artistName   = obj.artistName;
+    const songName     = obj.songName;
+    const languageCode = obj.languageCode;
+    const lyrics       = obj.lyrics
 
     //console.log("obj" , obj);
     //console.log("Button clicked!: " , artistName);
@@ -134,6 +227,8 @@ function clickLyricButton(id) {
     localStorage.setItem('id', id);
     localStorage.setItem('artistName', artistName);
     localStorage.setItem('songName', songName);
+    localStorage.setItem('languageCode', languageCode);
+    localStorage.setItem('lyrics', lyrics);
 
     window.location.href = "song.html";
 }

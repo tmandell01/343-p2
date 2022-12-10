@@ -4,6 +4,22 @@ body {
     height: 100vh;
 }
 
+.home-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.error-message {
+    display: flex;
+    justify-content: center;
+    padding: 20px 30px;
+    align-items: center;
+    text-align: center;
+}
+
 .title-header {
     display: flex;
     justify-content: center;
@@ -19,6 +35,15 @@ body {
     padding-top: 1em;
     padding-bottom: 1em;
     color:rgb(92, 92, 92);
+}
+.search-header2 {
+    display: flex;
+    justify-content: center;
+    padding: 20px 30px;
+    align-items: center;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    color:rgb(225, 22, 22);
 }
 
 .results-container {
